@@ -1,0 +1,260 @@
+---
+title: "Frameworks"
+output: html_document
+---
+---
+title: "Frameworks Project"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Frameworks Project
+
+```{r libraries}
+library(knitr)
+library(Hmisc)
+library(DT)
+library(ggplot2)
+library(dplyr)
+library(reshape2)
+library(ggthemes)
+library(stringr)
+library(data.table)
+library(tidytext)
+library(recommenderlab)
+
+opts_chunk$set(echo = TRUE, eval = TRUE, comment="", warning = FALSE, message = FALSE, tidy.opts=list(width.cutoff=55), tidy = TRUE)
+```
+```{r constants}
+name = "Name"
+city.name= "City"
+cuisine.name= "Cuisine Style"
+ranking.name= "Ranking"
+rating.name= "Rating"
+price.name= "Price Range"
+number.reviews.name= "Number of Reviews"
+review.name= "Reviews"
+
+```
+
+```{r load the data}
+dat <- fread(input ='~/Downloads/TA_restaurants_curated.csv', verbose = FALSE)
+```
+
+## Analyze the data
+
+You can also embed plots, for example:
+
+```{r analyze data, echo=FALSE}
+
+head(dat)
+names(dat)
+dat[,.N, by= city.name] #31 cities
+dat[,.N, by= cuisine.name] #list of cuisines
+dat[,.N, by= ranking.name] #rating up to 5 - (-1 ratings?)
+dat[,.N, by= rating.name] 
+dat[,.N, by= price.name] #47855 with no price range
+dat[,.N, by= number.reviews.name]
+
+
+#Split the cuisine style
+
+the.pattern = "'"
+the.pattern.start.end= "\\[|\\]"
+
+pattern.inside=","
+dat[, eval(cuisine.name) := gsub(pattern = the.pattern, replacement = "", x = get(cuisine.name))]
+dat[, eval(cuisine.name) := gsub(pattern = the.pattern.start.end, replacement = "", x = get(cuisine.name))]
+
+library(qdapTools)
+newdat= mtabulate(strsplit(as.character(dat[[cuisine.name]]), ","))
+
+finaldat= (cbind(dat, newdat))
+finaldat #with binary coding of cuisine styles
+
+```
+
+```{r text analysis looking at data}
+calculations_rating= dat[,.( `Mean Rating`=mean(get(rating.name), na.rm=TRUE), `Standard Deviation`=sd(get(rating.name), na.rm=TRUE))]
+calculations_rating
+
+#Mean by city name
+calculations_rating_city= dat[,.( `Mean Rating`=mean(get(rating.name), na.rm=TRUE), `Standard Deviation`=sd(get(rating.name), na.rm=TRUE)), by=city.name]
+calculations_rating_city
+
+#Median by city name
+calculations_rating_city= dat[,.( `Median Rating`=median(get(rating.name), na.rm=TRUE)), by=city.name]
+calculations_rating_city
+
+
+ggplot(data=dat,aes(x=Rating))+
+  geom_histogram(fill='blue')+
+  theme_economist()
+
+#Correlation between review rating and longer reviews
+cor_char=cor(nchar(dat$Reviews),dat$Rating,use="complete.obs")
+cor_char
+cor.test(nchar(dat$Reviews),dat$Rating)
+
+#Correlation with review length in words
+cor_words= cor(str_count(string = dat$Reviews,pattern = '\\S+'),dat$Rating,use="complete.obs")
+cor_words
+cor.test(str_count(string = dat$Reviews,pattern = '\\S+'),dat$Rating)
+
+#Correlation with review sentence
+cor_sentence= cor(str_count(string = dat$Reviews,pattern = "[A-Za-z,;'\"\\s]+[^.!?]*[.?!]"),dat$Rating,use="complete.obs")
+cor_sentence
+cor.test(str_count(string = dat$Reviews,pattern = "[A-Za-z,;'\"\\s]+[^.!?]*[.?!]"),dat$Rating,use="complete.obs")
+
+
+```
+```{r text analysis sentiment bing lexicon}
+
+#Using lexicon bing
+subdat= dat[,c("V1", "Rating", "Reviews")]
+subdat%>%
+  group_by(V1)%>%
+  unnest_tokens(output = word, input = Reviews)%>%
+  inner_join(get_sentiments('bing'))%>%
+  group_by(sentiment)
+
+#Positive and Negative Words in Reviews
+subdat%>%
+  group_by(V1)%>%
+  unnest_tokens(output = word, input = Reviews)%>%
+  inner_join(get_sentiments('bing'))%>%
+  group_by(sentiment)%>%
+  count()%>%
+  ggplot(aes(x=sentiment,y=n,fill=sentiment))+geom_col()+theme_economist()+guides(fill=F)
+
+#Proportion of Positive words in Reviews
+subdat %>%
+  select(V1,Reviews)%>%
+  group_by(V1)%>%
+  unnest_tokens(output=word,input=Reviews)%>%
+  ungroup()%>%
+  inner_join(get_sentiments('bing'))%>%
+  group_by(sentiment)%>%
+  summarize(n = n())%>%
+  mutate(proportion = n/sum(n))
+
+
+#Are positive reviews helpful?
+subdat %>%
+  select(V1,Reviews,Rating)%>%
+  group_by(V1)%>%
+  unnest_tokens(output=word,input=Reviews)%>%
+  ungroup()%>%
+  inner_join(get_sentiments('bing'))%>%
+  group_by(Rating,sentiment)%>%
+  summarize(n = n())%>%
+  mutate(proportion = n/sum(n))%>%
+  ggplot(aes(x=Rating,y=proportion,fill=sentiment))+geom_col()+theme_economist()
+
+```
+
+```{r text analysis sentiment nrc lexicon}
+#Emotions in ratings
+subdat%>%
+  group_by(V1)%>%
+  unnest_tokens(output = word, input = Reviews)%>%
+  inner_join(get_sentiments('nrc'))%>%
+  group_by(sentiment)%>%
+  count()%>%
+  ggplot(aes(x=reorder(sentiment,X = n),y=n,fill=sentiment))+geom_col()+guides(fill=F)+coord_flip()+theme_wsj()
+
+#Rating and emotions
+subdat%>%
+  group_by(V1)%>%
+  unnest_tokens(output = word, input = Reviews)%>%
+  inner_join(get_sentiments('nrc'))%>%
+  group_by(V1,sentiment,Rating)%>%
+  count()
+
+#Correlation between emotion and rating
+subdat%>%
+  group_by(V1)%>%
+  unnest_tokens(output = word, input = Reviews)%>%
+  inner_join(get_sentiments('nrc'))%>%
+  group_by(V1,sentiment,Rating)%>%
+  count()%>%
+  ungroup()%>%
+  group_by(sentiment)%>%
+  summarize(correlation = cor(n,Rating))
+
+```
+
+```{r text analysis sentiment affin lexicon}
+subdat %>%
+  select(V1,Reviews)%>%
+  group_by(V1)%>%
+  unnest_tokens(output=word,input=Reviews)%>%
+  inner_join(get_sentiments('afinn'))%>%
+  summarize(reviewSentiment = mean(score))%>%
+  ungroup()%>%
+  summarize(min=min(reviewSentiment),max=max(reviewSentiment),median=median(reviewSentiment),mean=mean(reviewSentiment))
+
+#Distribution of afinn lexicon scores
+subdat %>%
+  select(V1,Reviews)%>%
+  group_by(V1)%>%
+  unnest_tokens(output=word,input=Reviews)%>%
+  inner_join(get_sentiments('afinn'))%>%
+  summarize(reviewSentiment = mean(score))%>%
+  ungroup()%>%
+  ggplot(aes(x=reviewSentiment,fill=reviewSentiment>0))+
+  geom_histogram(binwidth = 0.1)+
+  scale_x_continuous(breaks=seq(-5,5,1))+scale_fill_manual(values=c('tomato','seagreen'))+
+  guides(fill=F)+
+  theme_wsj()
+
+```
+
+```{r text analysis by city}
+subdat= dat[,c("City", "Rating", "Reviews")]
+
+#Positive words and negative words in different cities
+subdat%>%
+  group_by(City)%>%
+  unnest_tokens(output = word, input = Reviews)%>%
+  inner_join(get_sentiments('bing'))%>%
+  group_by(City, sentiment)%>%
+  count()%>%
+  ggplot(aes(x=City,y=n,fill=sentiment))+geom_col()+theme_economist()+guides(fill=F)+ coord_flip()
+
+#Similar distribution of emotions
+subdat%>%
+  group_by(City)%>%
+  unnest_tokens(output = word, input = Reviews)%>%
+  inner_join(get_sentiments('nrc'))%>%
+  group_by(sentiment, City)%>%
+  count()%>%
+  ggplot(aes(x=City,y=n,fill=sentiment))+geom_bar(position = "fill", stat='identity')+guides(fill=F)+coord_flip()+theme_wsj()
+
+#Sentiment mean, median, max and min 
+subdat %>%
+  select(City,Reviews)%>%
+  group_by(City)%>%
+  unnest_tokens(output=word,input=Reviews)%>%
+  inner_join(get_sentiments('afinn'))%>%
+  summarize(reviewMeanSentiment = mean(score), reviewMedianSentiment = median(score), reviewMaxSentiment = max(score),reviewMinSentiment = min(score))
+
+
+```
+
+```{r trends system}
+
+#Look at correlation between rating and ranking
+cor_rank=cor(dat$Ranking,dat$Rating,use="complete.obs")
+cor_rank
+finaldat
+names(finaldat)
+
+#Trends- number of vegan options and gluten-free options?
+finaldat[get("Gluten Free Options") == 1, .N, by=city.name]
+finaldat[get("Vegan Options") == 1, .N, by=city.name]
+finaldat[get( "Healthy") == 1, .N, by=city.name]
+```
