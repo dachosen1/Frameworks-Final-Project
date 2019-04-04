@@ -19,6 +19,16 @@ The dataset contain restaurants information for 31 cities in Europe: Amsterdam (
 - **URL_TA:** part of the URL of the detailed restaurant page that comes after 'www.tripadvisor.com' as a string object (124 995 non-null)
 - **ID_TA:** identification of the restaurant in the TA database constructed a one letter and a number (124 995 non-null)
 
+
+### Goal of the Project : 
+
+1. Understand the factors that impact restaurant ratings? 
+2. Evaluate the data to understand user preferece?
+3. Using a recommedation system to make the website more user friendly? 
+4. Evaluate the eating trends of the different cities? 
+5. Cluster the restaurant based on the different understand and evaluate the trends over time? 
+6. Create a prediction model that classifies the restaurant ratings? 
+
 Missing information for restaurants (for example unrated or unreviewed restaurants) are in the dataset as NaN (numpy.nan)
 **Source:** https://www.kaggle.com/damienbeneschi/krakow-ta-restaurans-data-raw 
 
