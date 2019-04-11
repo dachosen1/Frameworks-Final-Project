@@ -1,65 +1,76 @@
 ---
-title: "Frameworks"
-output: html_document
----
----
-title: "Frameworks Project"
-output: html_document
+title: "Frameworks Final Project: Data Cleaning and Exloration"
+output: rmarkdown::github_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,tidy = TRUE)
 ```
 
-## Frameworks Project
+```{r libraries, message=FALSE, warning=FALSE}
+library(knitr); library(Hmisc); library(DT); library(ggplot2); library(dplyr); 
+library(reshape2); library(ggthemes); library(stringr); library(data.table); library(tidytext); library(recommenderlab); library(qdapTools); library(purrr); library(devtools)
 
-```{r libraries}
-library(knitr)
-library(Hmisc)
-library(DT)
-library(ggplot2)
-library(dplyr)
-library(reshape2)
-library(ggthemes)
-library(stringr)
-library(data.table)
-library(tidytext)
-library(recommenderlab)
-
-opts_chunk$set(echo = TRUE, eval = TRUE, comment="", warning = FALSE, message = FALSE, tidy.opts=list(width.cutoff=55), tidy = TRUE)
 ```
+
 ```{r constants}
 name = "Name"
-city.name= "City"
-cuisine.name= "Cuisine Style"
-ranking.name= "Ranking"
-rating.name= "Rating"
-price.name= "Price Range"
-number.reviews.name= "Number of Reviews"
-review.name= "Reviews"
-
+city.name = "City"
+cuisine.name = "Cuisine Style"
+ranking.name = "Ranking"
+rating.name = "Rating"
+price.name = "Price Range"
+number.reviews.name = "Number of Reviews"
+review.name = "Reviews"
 ```
 
 ```{r load the data}
-dat <- fread(input ='~/Downloads/TA_restaurants_curated.csv', verbose = FALSE)
+dat <- fread(input ='Data/TA_restaurants_curated.csv', verbose = FALSE)
 ```
 
-## Analyze the data
 
-You can also embed plots, for example:
+```{r functions}
+# specialized function to calculate the numberic value of '$,$$,$$$,$$$$` ratings 
+replace.value = function (data, colname, pattern = '-' ){
+
+number = vector() 
+for ( i in seq_along(data)) {
+ if (is.na(str_match(string = data[i, get(colname)], pattern = '-'))) {
+     number[i] = nchar(data[i, get(colname)])
+ } else { number[i] = ((nchar(data[i, get(colname)]) - 3) / 2)
+  }
+}
+
+print(number)
+
+}
+
+```
+
+## Data Exploration 
 
 ```{r analyze data, echo=FALSE}
 
-head(dat)
-names(dat)
-dat[,.N, by= city.name] #31 cities
-dat[,.N, by= cuisine.name] #list of cuisines
-dat[,.N, by= ranking.name] #rating up to 5 - (-1 ratings?)
-dat[,.N, by= rating.name] 
-dat[,.N, by= price.name] #47855 with no price range
-dat[,.N, by= number.reviews.name]
+# city Count
+count.city = dat[,.(count = .N,percentage = round((.N /nrow(dat)) * 100,2)), by= city.name] #31 cities
+setorder(count.city, -count)
+
+count.city
 
 
+count.cuising = dat[,.N, by= cuisine.name] #list of cuisines
+count.ranking = dat[,.N, by= ranking.name] #rating up to 5 - (-1 ratings?)
+count.rating = dat[,.N, by= rating.name] 
+count.price = dat[,.N, by= price.name] #47855 with no price range
+count.review = dat[,.N, by= number.reviews.name]
+
+
+```
+
+
+## Data Cleaning
+
+```{r Split}
 #Split the cuisine style
 
 the.pattern = "'"
@@ -70,13 +81,23 @@ dat[, eval(cuisine.name) := gsub(pattern = the.pattern, replacement = "", x = ge
 dat[, eval(cuisine.name) := gsub(pattern = the.pattern.start.end, replacement = "", x = get(cuisine.name))]
 dat[, eval(cuisine.name) := gsub(pattern = pattern.space, replacement = "", x = get(cuisine.name))]
 
-library(qdapTools)
+
 newdat= mtabulate(strsplit(as.character(dat[[cuisine.name]]), ","))
 
 finaldat= (cbind(dat, newdat))
 finaldat #with binary coding of cuisine styles
 
+
 ```
+
+```{r}
+new.price.col <- replace.value(data = finaldat, colname = price.name)
+finaldat$new_price <- new.price.col
+
+names(finaldat)
+```
+
+
 
 ```{r text analysis looking at data}
 calculations_rating= dat[,.( `Mean Rating`=mean(get(rating.name), na.rm=TRUE), `Standard Deviation`=sd(get(rating.name), na.rm=TRUE))]
@@ -258,4 +279,7 @@ names(finaldat)
 finaldat[get("Gluten Free Options") == 1, .N, by=city.name]
 finaldat[get("Vegan Options") == 1, .N, by=city.name]
 finaldat[get( "Healthy") == 1, .N, by=city.name]
+
+head(finaldat)
 ```
+
