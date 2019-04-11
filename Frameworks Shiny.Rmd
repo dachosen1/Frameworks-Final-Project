@@ -49,7 +49,7 @@ round.numerics <- function(x, digits){
 
 <<<<<<< HEAD
 =======
-2+2
+
 >>>>>>> 62c426cc52c4c4c6976ac5c1b2dcd0c831630663
 ```
 
