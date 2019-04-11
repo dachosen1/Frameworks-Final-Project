@@ -47,7 +47,6 @@ round.numerics <- function(x, digits){
   return(x)
 }
 
-
 ```
 
 ```{r constants}

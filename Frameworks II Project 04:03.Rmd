@@ -68,6 +68,7 @@ the.pattern.start.end= "\\[|\\]"
 pattern.inside=","
 dat[, eval(cuisine.name) := gsub(pattern = the.pattern, replacement = "", x = get(cuisine.name))]
 dat[, eval(cuisine.name) := gsub(pattern = the.pattern.start.end, replacement = "", x = get(cuisine.name))]
+dat[, eval(cuisine.name) := gsub(pattern = pattern.space, replacement = "", x = get(cuisine.name))]
 
 library(qdapTools)
 newdat= mtabulate(strsplit(as.character(dat[[cuisine.name]]), ","))
