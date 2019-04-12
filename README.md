@@ -25,7 +25,7 @@ The dataset contain restaurants information for 31 cities in Europe: Amsterdam (
 ### Goal of the Project : 
 
 1. Understand the factors that impact restaurant ratings? 
-2. Evaluate the data to understand user preferece?
+2. Evaluate the data to understand user preference?
 3. Using a recommedation system to make the website more user friendly? 
 4. Evaluate the eating trends of the different cities? 
 5. Cluster the restaurant based on the different understand and evaluate the trends over time? 
