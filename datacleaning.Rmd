@@ -1,6 +1,6 @@
 ---
 title: "Frameworks Final Project: Data Cleaning"
-output: html_document
+output: rmarkdown::github_document
 ---
 
 ```{r setup, include=FALSE}
@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,tidy = TRUE)
 
 ```{r libraries, message=FALSE, warning=FALSE}
 
-library(knitr);  library(DT); library(ggplot2); library(dplyr); library(stringr); library(data.table); library(tidytext); library(recommenderlab) 
+library(knitr);  library(DT);library(ggplot2);library(data.table); library(tidytext); library(stringr)
 
 ```
 
@@ -175,36 +175,28 @@ no more missing data
 # price count distribution
 price.count <- dat[, .N, by = price.name]
 price.count
+```
 
+```{r include=FALSE}
 # evaluating characters to numeric 
 value <- replace.value(data = dat, colname = price.name)
 
 dat$`Price Range` <- value
+```
 
+```{r}
 # result 
 price.count <- dat[, .N, by = price.name]
 price.count
+```
 
+## reviews 
+```{r}
+head(dat$Reviews)
 ```
 
 ```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-
-```
-
-```{r}
-
+write.csv(x = dat, file = 'Data/TA_restaurants_curated_clean.csv')
 ```
 
 ```{r}
