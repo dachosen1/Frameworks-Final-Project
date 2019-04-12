@@ -1,5 +1,7 @@
 # TripAdvisor Restaurants Info for 31 Euro-Cities
 
+Authors: Mayur Bensal, Cass Ernst-Faletto and Anderson Nelson 
+
 ### Ratings and reviews for restaurants across 31 European cities
 
 #### Context
