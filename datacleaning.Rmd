@@ -10,7 +10,7 @@ knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,tidy = TRUE)
 ```{r libraries, message=FALSE, warning=FALSE}
 
 library(knitr);  library(DT);library(ggplot2);library(data.table); library(tidytext); library(stringr)
-
+library(qdapTools)
 ```
 
 ```{r constants}
@@ -195,16 +195,34 @@ price.count
 head(dat$Reviews)
 ```
 
-```{r}
-write.csv(x = dat, file = 'Data/TA_restaurants_curated_clean.csv')
+```{r Split}
+#Split the cuisine style
+
+the.pattern = "'"
+the.pattern.start.end= "\\[|\\]"
+
+pattern.inside=","
+dat[, eval(cuisine.name) := gsub(pattern = the.pattern, replacement = "", x = get(cuisine.name))]
+dat[, eval(cuisine.name) := gsub(pattern = the.pattern.start.end, replacement = "", x = get(cuisine.name))]
+
+newdat= mtabulate(strsplit(as.character(dat[[cuisine.name]]), ","))
+finaldat= (cbind(dat, newdat))
 ```
 
+# Reviews 
 ```{r}
+library(stringr)
 
+
+reviewssplit <- str_split(string = dat$Reviews, pattern = '[]')
+
+reviewssplit
 ```
 
-```{r}
 
+```{r}
+write.csv(x = finaldat, file = 'Data/TA_restaurants_curated_clean.csv')
 ```
+
 
 
