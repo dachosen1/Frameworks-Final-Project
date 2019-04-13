@@ -29,7 +29,7 @@ dat <- fread(input ='Data/TA_restaurants_curated_clean.csv', verbose = FALSE)
 ```
 
 
-```{r analyze data, echo=FALSE}
+```{r analyze data, echo=TRUE}
 city.dat <-  dat[,.(count = .N, 
                   `Average Price Range` = mean(get(price.name)), 
                   `Average Rating` = mean(get(rating.name)),
@@ -37,8 +37,6 @@ city.dat <-  dat[,.(count = .N,
                  by= city.name]
 
 setorder(city.dat, -count)
-
-city.dat
 ```
 
 
@@ -92,7 +90,7 @@ cor.test(str_count(string = dat$Reviews,pattern = "[A-Za-z,;'\"\\s]+[^.!?]*[.?!]
 ```{r text analysis sentiment bing lexicon}
 
 #Using lexicon bing
-subdat= dat[,c("V1", "Rating", "Reviews")]
+subdat <-  dat[,c("V1", "Rating", "Reviews")]
 subdat%>%
   group_by(V1)%>%
   unnest_tokens(output = word, input = Reviews)%>%

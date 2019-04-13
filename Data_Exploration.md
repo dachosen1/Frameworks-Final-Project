@@ -1,4 +1,4 @@
-Frameworks Final Project: Data Exloration
+Frameworks Final Project: Data Exploration
 ================
 
 ``` r
@@ -21,72 +21,15 @@ review.name = "Reviews"
 dat <- fread(input ='Data/TA_restaurants_curated_clean.csv', verbose = FALSE)
 ```
 
-    ##           City count Average Price Range Average Rating
-    ##  1:     London 18212            1.477076       3.558396
-    ##  2:      Paris 14874            1.504605       3.717023
-    ##  3:     Madrid  9543            1.182280       3.506183
-    ##  4:  Barcelona  8425            1.390623       3.669614
-    ##  5:     Berlin  7078            1.074315       3.716233
-    ##  6:      Milan  6687            1.205025       3.575146
-    ##  7:       Rome  5949            1.661120       4.232140
-    ##  8:     Prague  4859            1.138094       3.446182
-    ##  9:     Lisbon  3986            1.328901       3.773583
-    ## 10:     Vienna  3724            1.313507       3.760204
-    ## 11:  Amsterdam  3434            1.676616       3.896768
-    ## 12:   Brussels  3204            1.522628       3.657615
-    ## 13:    Hamburg  3131            0.926062       3.523315
-    ## 14:     Munich  2995            1.375459       3.688982
-    ## 15:       Lyon  2930            1.129693       3.571843
-    ## 16:  Stockholm  2705            1.255083       3.526987
-    ## 17:   Budapest  2606            1.382003       3.828665
-    ## 18:     Warsaw  2352            1.234269       3.710884
-    ## 19: Copenhagen  2109            1.479137       3.732812
-    ## 20:     Dublin  2082            1.573487       3.804035
-    ## 21:     Athens  1938            1.325335       3.882611
-    ## 22:  Edinburgh  1865            1.618767       3.828418
-    ## 23:     Zurich  1667            1.678464       3.844931
-    ## 24:     Oporto  1580            1.363291       3.920886
-    ## 25:     Geneva  1572            1.598282       3.558524
-    ## 26:     Krakow  1354            1.269202       3.801699
-    ## 27:   Helsinki  1228            1.495114       3.647801
-    ## 28:       Oslo  1213            1.523908       3.659110
-    ## 29: Bratislava  1067            0.975164       3.323805
-    ## 30: Luxembourg   657            1.687215       3.708524
-    ## 31:  Ljubljana   501            1.453094       3.856287
-    ##           City count Average Price Range Average Rating
-    ##     Average number of reviews
-    ##  1:                 117.31117
-    ##  2:                 103.36513
-    ##  3:                  84.90695
-    ##  4:                 121.13329
-    ##  5:                  57.49322
-    ##  6:                 150.03051
-    ##  7:                 284.85493
-    ##  8:                  91.06298
-    ##  9:                 114.21977
-    ## 10:                  71.44952
-    ## 11:                 120.68841
-    ## 12:                  82.64170
-    ## 13:                  35.89077
-    ## 14:                  72.12788
-    ## 15:                  77.22799
-    ## 16:                  59.12089
-    ## 17:                 128.76401
-    ## 18:                  49.89626
-    ## 19:                  88.85111
-    ## 20:                 150.57253
-    ## 21:                  86.13777
-    ## 22:                 215.57373
-    ## 23:                  68.04079
-    ## 24:                 123.86899
-    ## 25:                  56.46947
-    ## 26:                 118.62408
-    ## 27:                  53.25489
-    ## 28:                  81.82688
-    ## 29:                  38.83224
-    ## 30:                  70.93760
-    ## 31:                  83.24551
-    ##     Average number of reviews
+``` r
+city.dat <-  dat[,.(count = .N, 
+                  `Average Price Range` = mean(get(price.name)), 
+                  `Average Rating` = mean(get(rating.name)),
+                  `Average number of reviews` = mean(get(number.reviews.name))),
+                 by= city.name]
+
+setorder(city.dat, -count)
+```
 
 ``` r
 ggplot(data = city.dat) + geom_bar(stat = 'identity', fill = 'firebrick4', 
@@ -198,7 +141,7 @@ cor.test(str_count(string = dat$Reviews,pattern = "[A-Za-z,;'\"\\s]+[^.!?]*[.?!]
 
 ``` r
 #Using lexicon bing
-subdat= dat[,c("V1", "Rating", "Reviews")]
+subdat <-  dat[,c("V1", "Rating", "Reviews")]
 subdat%>%
   group_by(V1)%>%
   unnest_tokens(output = word, input = Reviews)%>%
