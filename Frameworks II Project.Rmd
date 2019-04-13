@@ -32,57 +32,48 @@ head(dat)
 
 
 ```{r analyze data, echo=FALSE}
-city.dat <-  dat[,.(count = .N,percentage = round((.N /nrow(dat)) * 100,2), 
+city.dat <-  dat[,.(count = .N, 
                   `Average Price Range` = mean(get(price.name)), 
-                  `Average Rating` = mean(get(rating.name)), 
-               `Average number of reviews` = mean(get(number.reviews.name))), 
-               by= city.name]
+                  `Average Rating` = mean(get(rating.name)),
+                  `Average number of reviews` = mean(get(number.reviews.name))),
+                 by= city.name]
 
 setorder(city.dat, -count)
 
-head(city.dat)
+city.dat
 ```
 
 
 ```{r }
 ggplot(data = city.dat) + geom_bar(stat = 'identity', fill = 'firebrick4', 
                                      aes(x = reorder(City,count), y = count)) + 
- xlab('City') + ylab('Number of Restaurants')+coord_flip() + theme_classic()  + 
+ xlab('City') + ylab('Number of Restaurants')+coord_flip() + theme_wsj()  + 
  ggtitle('Number of Restaurants per City')
 ```
 
 ```{r}
 ggplot(data = city.dat) + geom_bar(stat = 'identity', fill = 'firebrick4', 
                                      aes(x = reorder(City,`Average Price Range`), y = `Average Price Range`)) + 
- xlab('City') + ylab('Average Price Range')+coord_flip() + theme_classic()  + 
+ xlab('City') + ylab('Average Price Range')+coord_flip() + theme_wsj()  + 
  ggtitle('Most Expensive City by Restaurant')
 ```
 
 ```{r}
 ggplot(data = city.dat) + geom_bar(stat = 'identity', fill = 'firebrick4', 
                                      aes(x = reorder(City,`Average number of reviews`), y = `Average number of reviews`)) + 
- xlab('City') + ylab('Average number of restaurants Reviews')+coord_flip() + theme_classic()  + 
+ xlab('City') + ylab('Average number of restaurants Reviews')+coord_flip() + theme_wsj()  + 
  ggtitle('Which City has the Most Restaurants Reviews')
 ```
 
 ```{r}
 ggplot(data = city.dat) + geom_bar(stat = 'identity', fill = 'firebrick4', 
                                      aes(x = reorder(City,`Average Rating`), y = `Average Rating`)) + 
- xlab('City') + ylab('Average Ratings')+coord_flip() + theme_classic()  + 
- ggtitle('Which City has the best Restaurants')
+ xlab('City') + ylab('Average Ratings')+coord_flip() + theme_wsj() + 
+ ggtitle('Which City has the best Restaurants') 
 ```
 
 ```{r text analysis looking at data}
-calculations_rating= dat[,.( `Mean Rating`=mean(get(rating.name), na.rm=TRUE), `Standard Deviation`=sd(get(rating.name), na.rm=TRUE))]
-calculations_rating
 
-#Mean by city name
-calculations_rating_city= dat[,.( `Mean Rating`=mean(get(rating.name), na.rm=TRUE), `Standard Deviation`=sd(get(rating.name), na.rm=TRUE)), by=city.name]
-calculations_rating_city
-
-#Median by city name
-calculations_rating_city= dat[,.( `Median Rating`=median(get(rating.name), na.rm=TRUE)), by=city.name]
-calculations_rating_city
 
 
 ggplot(data=dat,aes(x=Rating))+
