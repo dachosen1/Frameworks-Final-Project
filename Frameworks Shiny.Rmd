@@ -22,9 +22,15 @@ library(knitr)
 library(Hmisc)
 library(DT)
 library(ggplot2)
-library("RColorBrewer")
-
+library(RColorBrewer)
 library(data.table)
+library(rworldmap)
+library(leaflet)
+library(rworldmap)
+library(countrycode)
+library(qdapTools)
+
+
 assignInNamespace(x = "cedta.override", value = c(data.table:::cedta.override,"rmarkdown"), ns = "data.table")
 
 opts_chunk$set(echo = FALSE, comment="", warning = FALSE, message = FALSE, tidy.opts=list(width.cutoff=55), tidy = TRUE)
@@ -47,10 +53,7 @@ round.numerics <- function(x, digits){
   return(x)
 }
 
-<<<<<<< HEAD
-=======
 
->>>>>>> 62c426cc52c4c4c6976ac5c1b2dcd0c831630663
 ```
 
 ```{r constants}
@@ -72,7 +75,7 @@ city.name="City"
 
 
 ```{r read_data, include=FALSE, eval=TRUE}
-dat <- fread(input = "~/Downloads/TA_restaurants_curated.csv", verbose = FALSE)
+dat <- fread(input = 'Data/TA_restaurants_curated_clean.csv', verbose = FALSE)
 dat
 #Split the cuisine style
 
@@ -85,7 +88,7 @@ dat[, eval(cuisine.name) := gsub(pattern = the.pattern, replacement = "", x = ge
 dat[, eval(cuisine.name) := gsub(pattern = the.pattern.start.end, replacement = "", x = get(cuisine.name))]
 dat[, eval(cuisine.name) := gsub(pattern = pattern.space, replacement = "", x = get(cuisine.name))]
 
-library(qdapTools)
+
 newdat= mtabulate(strsplit(as.character(dat[[cuisine.name]]), ","))
 
 finaldat= (cbind(dat, newdat))
@@ -122,11 +125,6 @@ Map of Restaurants
 =====================================  
 
 ```{r} 
-library(rworldmap)
-library(leaflet)
-library(rworldmap)
-library(countrycode)
-
 europecodes= c("NL", "GR", "ES", "DE", "SK", "BE", "HU", "DK", "IE", "GB", "CH", "DE", "FI", "PL", "PT", "SI", "GB", "LU", "FR", "ES", "IT", "DE", "PT", "NO", "FR", "CZ", "IT", "SE", "AT", "PL", "CH")
 
 cities=finaldat[,.N, by="City"]
