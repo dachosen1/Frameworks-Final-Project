@@ -1,5 +1,5 @@
 ---
-title: "Frameworks Final Project: Data Cleaning and Exloration"
+title: "Frameworks Final Project: Data Exloration"
 output: rmarkdown::github_document
 ---
 
@@ -25,79 +25,52 @@ review.name = "Reviews"
 ```
 
 ```{r load the data}
-dat <- fread(input ='Data/TA_restaurants_curated.csv', verbose = FALSE)
+dat <- fread(input ='Data/TA_restaurants_curated_clean.csv', verbose = FALSE)
+
+head(dat)
 ```
 
-
-```{r functions}
-# specialized function to calculate the numberic value of '$,$$,$$$,$$$$` ratings 
-replace.value = function (data, colname, pattern = '-' ){
-
-number = vector() 
-for ( i in seq_along(data)) {
- if (is.na(str_match(string = data[i, get(colname)], pattern = '-'))) {
-     number[i] = nchar(data[i, get(colname)])
- } else { number[i] = ((nchar(data[i, get(colname)]) - 3) / 2)
-  }
-}
-
-print(number)
-
-}
-
-```
-
-## Data Exploration 
 
 ```{r analyze data, echo=FALSE}
+city.dat <-  dat[,.(count = .N,percentage = round((.N /nrow(dat)) * 100,2), 
+                  `Average Price Range` = mean(get(price.name)), 
+                  `Average Rating` = mean(get(rating.name)), 
+               `Average number of reviews` = mean(get(number.reviews.name))), 
+               by= city.name]
 
-# city Count
-count.city = dat[,.(count = .N,percentage = round((.N /nrow(dat)) * 100,2)), by= city.name] #31 cities
-setorder(count.city, -count)
+setorder(city.dat, -count)
 
-count.city
-
-
-count.cuising = dat[,.N, by= cuisine.name] #list of cuisines
-count.ranking = dat[,.N, by= ranking.name] #rating up to 5 - (-1 ratings?)
-count.rating = dat[,.N, by= rating.name] 
-count.price = dat[,.N, by= price.name] #47855 with no price range
-count.review = dat[,.N, by= number.reviews.name]
-
-
+head(city.dat)
 ```
 
 
-## Data Cleaning
-
-```{r Split}
-#Split the cuisine style
-
-the.pattern = "'"
-the.pattern.start.end= "\\[|\\]"
-
-pattern.inside=","
-dat[, eval(cuisine.name) := gsub(pattern = the.pattern, replacement = "", x = get(cuisine.name))]
-dat[, eval(cuisine.name) := gsub(pattern = the.pattern.start.end, replacement = "", x = get(cuisine.name))]
-dat[, eval(cuisine.name) := gsub(pattern = pattern.space, replacement = "", x = get(cuisine.name))]
-
-
-newdat= mtabulate(strsplit(as.character(dat[[cuisine.name]]), ","))
-
-finaldat= (cbind(dat, newdat))
-finaldat #with binary coding of cuisine styles
-
-
+```{r }
+ggplot(data = city.dat) + geom_bar(stat = 'identity', fill = 'firebrick4', 
+                                     aes(x = reorder(City,count), y = count)) + 
+ xlab('City') + ylab('Number of Restaurants')+coord_flip() + theme_classic()  + 
+ ggtitle('Number of Restaurants per City')
 ```
 
 ```{r}
-new.price.col <- replace.value(data = finaldat, colname = price.name)
-finaldat$new_price <- new.price.col
-
-names(finaldat)
+ggplot(data = city.dat) + geom_bar(stat = 'identity', fill = 'firebrick4', 
+                                     aes(x = reorder(City,`Average Price Range`), y = `Average Price Range`)) + 
+ xlab('City') + ylab('Average Price Range')+coord_flip() + theme_classic()  + 
+ ggtitle('Most Expensive City by Restaurant')
 ```
 
+```{r}
+ggplot(data = city.dat) + geom_bar(stat = 'identity', fill = 'firebrick4', 
+                                     aes(x = reorder(City,`Average number of reviews`), y = `Average number of reviews`)) + 
+ xlab('City') + ylab('Average number of restaurants Reviews')+coord_flip() + theme_classic()  + 
+ ggtitle('Which City has the Most Restaurants Reviews')
+```
 
+```{r}
+ggplot(data = city.dat) + geom_bar(stat = 'identity', fill = 'firebrick4', 
+                                     aes(x = reorder(City,`Average Rating`), y = `Average Rating`)) + 
+ xlab('City') + ylab('Average Ratings')+coord_flip() + theme_classic()  + 
+ ggtitle('Which City has the best Restaurants')
+```
 
 ```{r text analysis looking at data}
 calculations_rating= dat[,.( `Mean Rating`=mean(get(rating.name), na.rm=TRUE), `Standard Deviation`=sd(get(rating.name), na.rm=TRUE))]
