@@ -1,9 +1,94 @@
 ---
-title: "Reommendation System"
-output: html_document
+title: "Frameworks Final Project: Recommendation System"
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,tidy = TRUE)
+```
+
+```{r library}
+library(recommenderlab); library(tidyverse); library(data.table)
+```
+
+```{r}
+data <- read.csv('Data/TA_restaurants_curated_clean.csv')
+data <- data %>%
+ select(ID_TA, Name,Rating)
+```
+
+```{r}
+
+# create a sample data 
+sample <- sample(1:nrow(data), size = 10000)
+data.n <- data[sample, ]
+
+# converting data into an class s4
+data_matrix <- as(object = data.n, Class = 'realRatingMatrix')
+
+# z score normalization 
+data_matrix_znorm <-normalize(x = data_matrix, method='Z-score')
+
+# center normalization 
+data_matrix_cnorm <-normalize(x = data_matrix, method='center')
+
+```
+
+## Non Personalized Recommendation system 
+
+```{r}
+recommenderRegistry$get_entry("POPULAR", type ="realRatingMatrix")
+
+
+# recommendation for normal data 
+recom <- Recommender(data_matrix,method='POPULAR',parameter = list(normalize=NULL))
+pred <- predict(recom,data_matrix, n = 2)
+
+as.data.frame(mapply(c, getList(pred), 
+                     getRatings(pred), 
+                     as.list(rowMeans(data_matrix, na.rm = TRUE))))
+
+# recommendation for normalized data by z score
+recom2 <- Recommender(data_matrix,method='POPULAR',parameter = list(normalize=NULL))
+pred2 <- predict(recom,data_matrix_znorm, n = 2)
+
+as.data.frame(mapply(c, getList(pred2), 
+                     getRatings(pred2), 
+                     as.list(rowMeans(data_matrix_znorm, na.rm = TRUE))))
+
+
+# recommendation for normalized data by center
+recom3 <- Recommender(data_matrix,method='POPULAR',parameter = list(normalize=NULL))
+pred3 <- predict(recom,data_matrix_znorm, n = 2)
+
+as.data.frame(mapply(c, getList(pred3), 
+                     getRatings(pred3), 
+                     as.list(rowMeans(data_matrix_znorm, na.rm = TRUE))))
+
+
+```
+
+
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
 ```
 
