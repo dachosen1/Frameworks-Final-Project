@@ -47,12 +47,10 @@ print(number)
 mean.missing <- function(x) {
  return(mean(is.na(x)))
 }
-
 ```
 
 ```{r Drop columns }
 # Drop columns 
-dat$ID_TA <- NULL
 dat$URL_TA <- NULL
 ```
 
@@ -212,11 +210,6 @@ finaldat= (cbind(dat, newdat))
 # Reviews 
 ```{r}
 library(stringr)
-
-
-reviewssplit <- str_split(string = dat$Reviews, pattern = '[]')
-
-reviewssplit
 ```
 
 

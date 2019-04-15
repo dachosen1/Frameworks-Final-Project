@@ -1,28 +1,153 @@
 ---
-title: "Reommendation System"
-output: html_document
+title: "Frameworks Final Project: Recommendation System"
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,tidy = TRUE)
 ```
 
-## R Markdown
-
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
-
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r library}
+library(recommenderlab); library(tidyverse); library(data.table)
 ```
 
-## Including Plots
-
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+data <- read.csv('Data/TA_restaurants_curated_clean.csv')
+data <- data %>%
+ select(ID_TA, Name,Rating)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+```{r}
+
+# create a sample data 
+sample <- sample(1:nrow(data), size = 10000)
+data.n <- data[sample, ]
+
+# converting data into an class s4
+data_matrix <- as(object = data.n, Class = 'realRatingMatrix')
+
+# z score normalization 
+data_matrix_znorm <-normalize(x = data_matrix, method='Z-score')
+
+# center normalization 
+data_matrix_cnorm <-normalize(x = data_matrix, method='center')
+
+```
+
+## Non Personalized Recommendation system: Popular Recommendation 
+
+```{r}
+recommenderRegistry$get_entry("POPULAR", type ="realRatingMatrix")
+
+
+# recommendation for normal data 
+recom <- Recommender(data_matrix,method='POPULAR',parameter = list(normalize=NULL))
+pred <- predict(recom,data_matrix, n = 2)
+
+as.data.frame(mapply(c, getList(pred), 
+                     getRatings(pred), 
+                     as.list(rowMeans(data_matrix, na.rm = TRUE))))
+
+# recommendation for normalized data by z score
+recom2 <- Recommender(data_matrix,method='POPULAR',parameter = list(normalize=NULL))
+pred2 <- predict(recom,data_matrix_znorm, n = 2)
+
+as.data.frame(mapply(c, getList(pred2), 
+                     getRatings(pred2), 
+                     as.list(rowMeans(data_matrix_znorm, na.rm = TRUE))))
+
+
+# recommendation for normalized data by center
+recom3 <- Recommender(data_matrix,method='POPULAR',parameter = list(normalize=NULL))
+pred3 <- predict(recom,data_matrix_znorm, n = 2)
+
+as.data.frame(mapply(c, getList(pred3), 
+                     getRatings(pred3), 
+                     as.list(rowMeans(data_matrix_znorm, na.rm = TRUE))))
+
+
+```
+
+
+## user based colaborative filtering system 
+
+```{r}
+recommenderRegistry$get_entry('UBCF', type = 'realRatingMatrix')
+
+
+# recommendation for normal data 
+recom4 <- Recommender(data_matrix,method='UBCF',parameter = list(method = 'Cosine', nn = 2))
+pred4 <- predict(recom4,data_matrix, type = 'ratingMatrix')
+
+as.data.frame(mapply(c, getList(pred4), 
+                     getRatings(pred4), 
+                     as.list(rowMeans(data_matrix, na.rm = TRUE))))
+
+
+# recommendation for normal data 
+recom5 <- Recommender(data_matrix_znorm,method='UBCF',parameter = list(
+ method = 'Cosine', nn = 2))
+pred5 <- predict(recom5,data_matrix_znorm, type = 'ratingMatrix')
+
+as.data.frame(mapply(c, getList(pred5), 
+                     getRatings(pred5), 
+                     as.list(rowMeans(data_matrix_znorm, na.rm = TRUE))))
+
+
+# recommendation for normal data 
+recom5 <- Recommender(data_matrix,method='UBCF',parameter = list(
+ method = 'Cosine', nn = 2))
+pred5 <- predict(recom5,data_matrix, type = 'ratingMatrix')
+
+as.data.frame(mapply(c, getList(pred5), 
+                     getRatings(pred5), 
+                     as.list(rowMeans(data_matrix, na.rm = TRUE))))
+```
+
+```{r}
+recommenderRegistry$get_entry('IBCF', type = 'realRatingMatrix')
+
+
+# recommendation for normal data 
+recom6 <- Recommender(data_matrix,method='IBCF',parameter = list(method = 'Cosine', nn = 2))
+pred6 <- predict(recom4,data_matrix, type = 'ratingMatrix')
+
+as.data.frame(mapply(c, getList(pred6), 
+                     getRatings(pred6), 
+                     as.list(rowMeans(data_matrix, na.rm = TRUE))))
+
+
+# recommendation for normal data 
+recom7 <- Recommender(data_matrix_znorm,method='IBCF',parameter = list(
+ method = 'Cosine', nn = 2))
+pred7 <- predict(recom7,data_matrix_znorm, type = 'ratingMatrix')
+
+as.data.frame(mapply(c, getList(pred7), 
+                     getRatings(pred7), 
+                     as.list(rowMeans(data_matrix_znorm, na.rm = TRUE))))
+
+
+# recommendation for normal data 
+recom8 <- Recommender(data_matrix,method='IBCF',parameter = list(
+ method = 'Cosine', nn = 2))
+pred8 <- predict(recom8,data_matrix, type = 'ratingMatrix')
+
+as.data.frame(mapply(c, getList(pred8), 
+                     getRatings(pred8), 
+                     as.list(rowMeans(data_matrix, na.rm = TRUE))))
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+```
+
