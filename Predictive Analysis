@@ -1,0 +1,221 @@
+---
+title: "predictive analysis"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r libraries}
+library(knitr)
+library(Hmisc)
+library(DT)
+library(ggplot2)
+library(dplyr)
+library(reshape2)
+library(ggthemes)
+library(stringr)
+library(data.table)
+library(tidytext)
+library(recommenderlab)
+library(caret)
+library(nnet)
+library(tidyverse)
+library(data.table)
+library(stringr)
+library(randomForest)
+library(ranger)
+
+opts_chunk$set(echo = TRUE, eval = TRUE, comment="", warning = FALSE, message = FALSE, tidy.opts=list(width.cutoff=55), tidy = TRUE)
+```
+
+```{r constants}
+name = "Name"
+city.name= "City"
+cuisine.name= "Cuisine Style"
+ranking.name= "Ranking"
+rating.name= "Rating"
+price.name= "Price Range"
+number.reviews.name= "Number of Reviews"
+review.name= "Reviews"
+
+
+```
+
+```{r load the data}
+dat <- fread(input ='TA_restaurants_curated.csv', verbose = FALSE)
+```
+
+```{r functions}
+## Data size function
+set.size<-function(n,dat){
+  the.rows<-sample(x=1:nrow(dat),size=n,replace = FALSE)
+  return(dat[the.rows,])
+}
+
+```
+
+
+## Analyze the data
+
+You can also embed plots, for example:
+
+```{r analyze data, echo=FALSE}
+
+head(dat)
+names(dat)
+dat[,.N, by= city.name] #31 cities
+dat[,.N, by= cuisine.name] #list of cuisines
+dat[,.N, by= ranking.name] #rating up to 5 - (-1 ratings?)
+dat[,.N, by= rating.name] 
+dat[,.N, by= price.name] #47855 with no price range
+dat[,.N, by= number.reviews.name]
+
+dat[`Price Range`==""]<-NA
+dat.complete<-dat[complete.cases(dat)]
+#Split the cuisine style
+
+the.pattern = "'"
+the.pattern.start.end= "\\[|\\]"
+
+pattern.inside=","
+dat.complete[, eval(cuisine.name) := gsub(pattern = the.pattern, replacement = "", x = get(cuisine.name))]
+dat.complete[, eval(cuisine.name) := gsub(pattern = the.pattern.start.end, replacement = "", x = get(cuisine.name))]
+
+library(qdapTools)
+newdat= mtabulate(strsplit(as.character(dat.complete[[cuisine.name]]), ","))
+
+finaldat= (cbind(dat.complete, newdat))
+finaldat #with binary coding of cuisine styles
+finaldat<-finaldat[,c(1:136)]
+
+```
+
+```{r feature engineering}
+#Healthystuff
+finaldat$Healthystuff<-str_detect(finaldat$`Cuisine Style`,c(' Healthy',' Gluten Free Options',' Vegan Options',' Vegetarian Friendly'))
+                                  
+finaldat$Healthystuff<-as.numeric(finaldat$Healthystuff)
+cor(finaldat$Healthystuff,finaldat$Rating) #0.128
+
+finaldat$reviewlength<-nchar(finaldat$Reviews)
+cor(finaldat$reviewlength,finaldat$Rating) #-0.04
+```
+
+```{r Creating categories for Price Range}
+finaldat$City<-as.factor(finaldat$City)
+finaldat$`Price Range`<-as.factor(finaldat$`Price Range`)
+levels(finaldat$`Price Range`)<-c("Low","Medium","High")
+summary(finaldat$`Price Range`)
+finaldat$Rating<-as.factor(finaldat$Rating)
+```
+```{r finaldat for models}
+finaldat.model<-select(finaldat,c(3,5:8,12:138))
+```
+
+
+```{r splitting}
+split<-createDataPartition(finaldat.model$Rating,p = 0.8,list = FALSE,groups = 100)
+train<-finaldat.model[split,]
+test<-finaldat.model[-split,]
+```
+
+```{r sampling train dataset to evaluate models}
+train.5000<-set.size(5000,train)
+train.1000<-set.size(1000,train)
+```
+
+
+```{r logistic regression model}
+#Predicting Price Range 
+model1<-multinom(`Price Range`~Healthystuff+Ranking+Rating+`Number of Reviews`+reviewlength,train.1000,family='binomial')
+summary(model1)
+pred1<-predict(model1,newdata=test)
+cm <- confusionMatrix(pred1, test$`Price Range`)
+  accuracy <- cm$overall[[1]] #Accuracy               70 percent accuracy
+  accuracy
+```
+
+```{r}
+#price range using random forest
+model2<-randomForest(`Price Range`~ Healthystuff+Ranking+Rating+reviewlength,train.1000,ntree=250)
+summary(model2)
+pred2 <- predict(model2, newdata = test)
+
+  cm_2 <- confusionMatrix(pred2, test$`Price Range`)
+  accuracy_2 <- cm_2$overall[[1]]
+  accuracy_2 #Accuracy 68.6 percent
+```
+
+
+#Predicting Ratings for Shiny App tab
+```{r analyzing cuisines with respect to their occurences in restaurants}
+cuisines<-train[,6:130]
+train.cuisine<-cuisines[,.('cuisine'=names(cuisines),'mean'=colMeans(cuisines)*100)]
+setorderv(train.cuisine,order=-1,cols="mean")
+datatable(train.cuisine) #decreasing order of occurences (42% of restaurants are Vegetarian Friendly)
+```
+
+```{r predicting ratings for restaurant owners based on 10 most occuring cuisines}
+mod_mlr<- multinom(Rating~City+`Price Range`+`Number of Reviews`+` Asian`+Healthystuff+` European`+` Vegetarian Friendly`+` Vegan Options`+` Gluten Free Options`+` Mediterranean`+ ` Pub`+` Pizza`+` Spanish`+` Bar`+Ranking+reviewlength,data=train.5000)
+summary(mod_mlr)
+pred_mlr<-predict(mod_mlr,newdata=test)
+cm_mlr <- confusionMatrix(pred_mlr, test$Rating)
+  accuracy_mlr <- cm_mlr$overall[[1]] # 44.3 percent(train.1000) #48.56 percent (train.5000)
+  accuracy_mlr
+```
+
+
+```{r trying all cuisines for a model}
+train.5000.fifty<-train.5000[,c(1:5,9,13,19,20,23,24,26,34,38,41,43,44,46,50,51,53,55,56,59,60,61,62,64,65,68,71,73,74,76,80,82,93,96,97,101,102,103,106,107,109,111,112,113,114,117,120,123,124,126,128,131,132)]##includes 50 most occuring cuisine styles
+
+mod_mlr1<- multinom(Rating~.,data=train.5000.fifty)
+summary(mod_mlr1)
+pred_mlr1<-predict(mod_mlr1,newdata=test)
+cm_mlr1 <- confusionMatrix(pred_mlr1, test$Rating)
+  accuracy_mlr1<- cm_mlr1$overall[[1]]
+  accuracy_mlr1                              #accuracy 48%
+```
+
+
+```{r random forest with all cuisine styles}
+train.5000.fifty.copy<-copy(train.5000.fifty)
+mod_rf<-ranger(Rating~.,data = train.5000.fifty,num.trees = 250)
+summary(mod_rf)
+pred_rf <- predict(mod_rf, newdata = test)
+
+  cm_rf <- confusionMatrix(pred_rf, test$Rating)
+  accuracy_rf <- cm_rf$overall[[1]]
+  accuracy_rf #Accuracy 68.6 percent
+```
+
+```{r}
+CTRL <- trainControl(method = "repeatedcv", 
+                     number = 2, 
+                     repeats = 1, 
+                     verboseIter = TRUE,
+                     classProbs = TRUE,
+                     returnResamp = "final",
+                     summaryFunction = twoClassSummary)
+
+ranger_model <- caret::train(Rating ~ .,
+                             train.5000.fifty,
+                             method = "ranger",
+                             trControl = CTRL,
+                             preProc = c("center", "scale"),
+                             metric="ROC",
+                             tuneGrid = expand.grid(.mtry=c(1,2), .splitrule="gini"))
+
+rf_model <- caret::train(Rating ~ .,
+                         train.5000.fifty,
+                         method = "rf",
+                         trControl = CTRL,
+                         preProc = c("center", "scale"),
+                         metric="ROC",
+                         tuneGrid = expand.grid(.mtry=c(1,2)))
+
+ranger_model
+rf_model
+```
+
