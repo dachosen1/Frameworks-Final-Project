@@ -1,10 +1,12 @@
 ---
 title: "predictive analysis"
-output: html_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 
-```{r libraries, include=FALSE}
+```{r libraries}
 library(knitr)
 library(Hmisc)
 library(reshape2)
@@ -21,12 +23,12 @@ library(psych)
 library(tidyverse)
 ```
 
-```{r setup, include=FALSE}
+```{r setup}
 opts_chunk$set(echo = TRUE, eval = TRUE, comment="", warning = FALSE, message = FALSE, tidy.opts=list(width.cutoff=55), tidy = TRUE)
 
 ```
 
-```{r constants, include=FALSE}
+```{r constants}
 name = "Name"
 city.name= "City"
 cuisine.name= "Cuisine Style"
@@ -38,7 +40,7 @@ review.name= "Reviews"
 
 ```
 
-```{r load the data, include=FALSE}
+```{r load the data}
 dat <- fread(input ='Data/TA_restaurants_curated_clean.csv', verbose = FALSE)
 dat <- dat["Price Range" > 0]
 
@@ -48,7 +50,7 @@ dat[,'V1'] <- NULL
 
 ```
 
-```{r functions, include=FALSE}
+```{r functions}
 ## Data size function
 set.size<-function(n,dat){
   the.rows<-sample(x=1:nrow(dat),size=n,replace = FALSE)
@@ -58,12 +60,13 @@ set.size<-function(n,dat){
 ```
 
 
-```{r}
+```{r correlation}
 corr.dat <- cor(x = dat, y = dat[,c('Ranking', 'Rating','Price Range')])
 corr.dat <- as.matrix(corr.dat[corr.dat[,'Price Range'] > 0.1,])
 
 corrplot(corr.dat)
 ```
+
 
 ### Predicting Price Range
 
@@ -71,7 +74,7 @@ corrplot(corr.dat)
 
 dat$`Price Range` <- as.factor(dat$`Price Range`)
 
-n.values <- c(1000, 5000)
+n.values <- c(1000,5000,10000)
 set.seed(5420)
 split <- createDataPartition(dat$Rating,p = 0.8,list = FALSE,groups = 100)
 train <- dat[split,]
@@ -81,7 +84,7 @@ test <- dat[-split,]
 
 
 ## multinomial regression 
-```{r logistic regression model, include=FALSE}
+```{r logistic regression model}
 
 mlr <- function(data){ 
   require(nnet)
@@ -100,21 +103,20 @@ mlr <- function(data){
 }
 
 
+
 ml.result <- data.frame()
 for (i in seq_along(n.values)){
   result <- mlr(data = set.size(n = n.values[i],dat = train))
   ml.result <- rbind(ml.result,result)
 }
 
-
 ml.result
-
 ```
 
 
 ## Random Forest
 
-```{r}
+```{r random forest}
 
 rf.train <- function(data){ 
   Model = 'Random Forest'
@@ -122,7 +124,7 @@ rf.train <- function(data){
   control <- trainControl(method = 'cv', number = 3,
                           search = 'random')
   
-  grid <- expand.grid(mtry = 160,splitrule = 'gini',
+  grid <- expand.grid(mtry = c(20,80,160),splitrule = 'gini',
    min.node.size = 15
    )
   rf <- train(`Price Range` ~., data = data,method = 'ranger',
@@ -155,7 +157,7 @@ rf.result
 
 ## Principle Component Analysis 
 
-```{r}
+```{r PCA training}
 train$`Price Range` <- as.numeric(train$`Price Range`)
 pca_facto <- PCA(train,graph = F)
 fviz_eig(pca_facto,ncp=11,addlabels = T)
@@ -163,7 +165,7 @@ fviz_eig(pca_facto,ncp=11,addlabels = T)
 ```
 
 
-```{r}
+```{r pca facto}
 
 library(factoextra);library(gridExtra)
 pca_facto = PCA(train,scale.unit = T,ncp = 6,graph = F)
@@ -172,12 +174,12 @@ pca_facto$var$contrib %>%
   round(2)
 ```
 
-```{r}
+```{r pca charts}
 charts = lapply(1:6,FUN = function(x) fviz_contrib(pca_facto,choice = 'var',axes = x,title=paste('Dim',x)))
 grid.arrange(grobs = charts,ncol=3,nrow=2)
 ```
 
-```{r}
+```{r pca variables}
 fviz_pca_var(X = pca_facto,col.var = 'contrib',gradient.cols = c('red'),col.circle = 'steelblue',repel = T)
 ```
 
