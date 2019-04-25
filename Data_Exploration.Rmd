@@ -3,14 +3,14 @@ title: "Frameworks Final Project: Data Exploration"
 output: rmarkdown::github_document
 ---
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,tidy = TRUE)
-```
-
 ```{r libraries, message=FALSE, warning=FALSE}
 library(knitr); library(Hmisc); library(DT); library(ggplot2); library(dplyr); 
 library(reshape2); library(ggthemes); library(stringr); library(data.table); library(tidytext); library(recommenderlab); library(qdapTools); library(purrr); library(devtools)
 
+```
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, warning = FALSE, message = FALSE,tidy = TRUE)
 ```
 
 ```{r constants}
