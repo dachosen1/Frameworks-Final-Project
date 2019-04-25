@@ -4,42 +4,44 @@ library(ggplot2)
 library(ggthemes)
 library(RColorBrewer)
 
+
+
 #--------------------------------------Confustion matrix analysis
  
 cm.consolidate <- function (path, Observations, model){ 
- dat = readRDS(path)
- cm = as.data.frame(dat$byClass[1:4,1:2])
- cm$Observations <- Observations
- cm$Model <- model
- cm$class <- rownames(cm)
- rownames(cm) <- NULL
- cm$Sensitivity <- round(cm$Sensitivity, 2)
- cm$Specificity <- round(cm$Specificity, 2)
+        dat = readRDS(path)
+        cm = as.data.frame(dat$byClass[1:4,1:2])
+        cm$Observations <- Observations
+        cm$Model <- model
+        cm$class <- rownames(cm)
+        rownames(cm) <- NULL
+        cm$Sensitivity <- round(cm$Sensitivity, 2)
+        cm$Specificity <- round(cm$Specificity, 2)
  
  return(cm)
 }
 
 cm.accurary <- function (path, name) {
- dat = readRDS(path)$overall[1]
+        dat = readRDS(path)$overall[1]
 
  return(dat)
 }
 
 # create a confustion matrix for all models results 
-cm.1000.mlr <- cm.consolidate(path = 'models/Price Range/cm_Multinomial Multinomial Regression1000.rda', 
-               Observations = 1000, model = 'Multinomial Regression')
+cm.1000.mlr <- cm.consolidate(path = 'models/Price Range/cm_Multinomial Multinomial Regression1000.rda',
+                              Observations = 1000, model = 'Multinomial Regression')
 
 
-cm.10000.mlr <- cm.consolidate(path = 'models/Price Range/cm_Multinomial Multinomial Regression1000.rda', 
-                              Observations = 10000, model = 'Multinomial Regression')
+cm.10000.mlr <- cm.consolidate(path = 'models/Price Range/cm_Multinomial Multinomial Regression1000.rda',
+                               Observations = 10000, model = 'Multinomial Regression')
 
-cm.5000.mlr <- cm.consolidate(path = 'models/Price Range/cm_Multinomial Multinomial Regression5000.rda', 
-                               Observations = 5000, model = 'Multinomial Regression')
+cm.5000.mlr <- cm.consolidate(path = 'models/Price Range/cm_Multinomial Multinomial Regression5000.rda',
+                              Observations = 5000, model = 'Multinomial Regression')
 
-cm.5000.rf <- cm.consolidate(path = 'models/Price Range/cm_Random Forest5000.rda', 
-                              Observations = 5000, model = 'Random Forest')
+cm.5000.rf <- cm.consolidate(path = 'models/Price Range/cm_Random Forest5000.rda',
+                             Observations = 5000, model = 'Random Forest')
 
-cm.1000.rf <- cm.consolidate(path = 'models/Price Range/cm_Random Forest1000.rda', 
+cm.1000.rf <- cm.consolidate(path = 'models/Price Range/cm_Random Forest1000.rda',
                              Observations = 1000, model = 'Random Forest')
 
 cm.10000.rf <- cm.consolidate(path = 'models/Price Range/cm_Random Forest10000.rda', 
@@ -62,7 +64,6 @@ ggplot(data = cm.all, aes(x = class, y = Sensitivity)) +
               axis.text.x = element_text(angle=0),
               plot.title = element_text(hjust = 0.5))
 
-
 # Sensitivity plotting 
 ggplot(data = cm.all, aes(x = class, y = Specificity)) + 
         geom_bar(stat= 'identity', alpha = 0.9,  position = 'dodge',aes(fill = Model)) + 
@@ -75,10 +76,6 @@ ggplot(data = cm.all, aes(x = class, y = Specificity)) +
               text = element_text(size=20),
               axis.text.x = element_text(angle=0),
               plot.title = element_text(hjust = 0.5))
-
-
-#g3eom_text(aes(label = Specificity, y = Specificity + 0.05),position = position_dodge(0.9),vjust = 0.7)
-
 
 #--------------------------------------Accuracy 
 
