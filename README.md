@@ -2,15 +2,16 @@
 
 Authors: Mayur Bensal, Cass Ernst-Faletto and Anderson Nelson 
 
+TripAdvisor an American company that currently holds the world’s largest travel site. It is a travel and restaurant website that hosts restaurant and hotel reviews as well as accommodation bookings and forums. We think analyzing TripAdvisor data is interesting as there is a high volume of traffic on the site, approximately 490 million unique monthly visitors. There is currently 730 million reviews and opinions on TripAdvisor with 7.5 million accommodations, restaurants, and attractions. TripAdvisor covers 136,000 destinations with 4.9 million restaurants on its website1. 
+
 ### Ratings and reviews for restaurants across 31 European cities
 
 #### Context
-This dataset has been obtained by scraping TA (the famous tourism website) for information about restaurants for a given city. The scraper goes through the restaurants listing pages and fulfills a raw dataset. The raw datasets for the main cities in Europe have been then curated for futher analysis purposes, and aggregated to obtain this dataset.
+The dataset we have chosen contains restaurant information for 31 European Cities. It is important to note that this dataset only contains restaurants that are listed in the TripAdvisor database, we do not have a list of restaurants in each city. Each restaurant has information about its ranking in the city, cuisine style, rating, price range, number of reviews and the reviews written by customers. 
 
-IMPORTANT: the restaurants list contains the restaurants that are registrered in the TA database only. All the restaurants of a city may not be resgistered in this database.
 
 #### Content
-The dataset contain restaurants information for 31 cities in Europe: Amsterdam (NL), Athens (GR) , Barcelona (ES) , Berlin (DE), Bratislava (SK), Bruxelles (BE), Budapest (HU), Copenhagen (DK), Dublin (IE), Edinburgh (UK), Geneva (CH), Helsinki (FI), Hamburg (DE), Krakow (PL), Lisbon (PT), Ljubljana (SI), London (UK), Luxembourg (LU), Madrid (ES), Lyon (FR), Milan (IT), Munich (DE), Oporto (PT), Oslo (NO), Paris (FR), Prague (CZ), Rome (IT), Stockholm (SE), Vienna (AT), Warsaw (PL), Zurich (CH).
+list of 31 cities in the data: Amsterdam (NL), Athens (GR) , Barcelona (ES) , Berlin (DE), Bratislava (SK), Bruxelles (BE), Budapest (HU), Copenhagen (DK), Dublin (IE), Edinburgh (UK), Geneva (CH), Helsinki (FI), Hamburg (DE), Krakow (PL), Lisbon (PT), Ljubljana (SI), London (UK), Luxembourg (LU), Madrid (ES), Lyon (FR), Milan (IT), Munich (DE), Oporto (PT), Oslo (NO), Paris (FR), Prague (CZ), Rome (IT), Stockholm (SE), Vienna (AT), Warsaw (PL), Zurich (CH).
 
   - **City:**  Location of the restaurant Cuisine Style: cuisine style(s) of the restaurant, in a Python list object 
 - **Ranking:** Rank of the restaurant among the total number of restaurants in the city as a float object 
@@ -24,12 +25,13 @@ The dataset contain restaurants information for 31 cities in Europe: Amsterdam (
 
 ### Goal of the Project : 
 
-1. Understand the factors that impact restaurant ratings? 
-2. Evaluate the data to understand user preference?
-3. Using a recommedation system to make the website more user friendly? 
-4. Evaluate the eating trends of the different cities? 
-5. Cluster the restaurant based on the different understand and evaluate the trends over time? 
-6. Create a prediction model that classifies the restaurant ratings? 
+The goal of the project is to evaluate the  data from the restaurant owner standpoint: Trip advisor provides a lot of insights to consumer on how to select places to travel and how to evaluate travel options. For this analysis we wanted to provide data to help restaurants make better decision pricing, location, menu options. With this insight, restaurant owner can pivot their marketing campaign and offerings. We wanted to accomplish this by answering the  research questions. 
+1. Understand the factors that impact restaurant ratings and price
+2. Evaluate the data to understand user preferences and rating rationale 
+3. Evaluate the eating trends of the different cities
+4. What impact does healthy options have on customer’s rating of restaurants
+5. Create a prediction model that classifies the restaurant ratings and prices range
+
 
 Missing information for restaurants (for example unrated or unreviewed restaurants) are in the dataset as NaN (numpy.nan)
 **Source:** https://www.kaggle.com/damienbeneschi/krakow-ta-restaurans-data-raw 
