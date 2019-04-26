@@ -144,6 +144,15 @@ for (i in seq_along(n.values)){
   result <- mlr(data = set.size(n = n.values[i],dat = train))
   ml.result <- rbind(ml.result,result)
 }
+
+
+model <- glm(formula = `Price Range`~ ., family = binomial, data = train)
+
+summary(model)
+
+dat[, .(prop = .N / nrow(dat)), by = price.name]
+
+
 ```
 
 ## Random Forest Model
