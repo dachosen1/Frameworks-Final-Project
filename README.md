@@ -22,8 +22,7 @@ list of 31 cities in the data: Amsterdam (NL), Athens (GR) , Barcelona (ES) , Be
 - **URL_TA:** part of the URL of the detailed restaurant page that comes after 'www.tripadvisor.com' as a string object (124 995 non-null)
 - **ID_TA:** identification of the restaurant in the TA database constructed a one letter and a number (124 995 non-null)
 
-
-### Goal of the Project : 
+## Goal of the Project : 
 
 The goal of the project is to evaluate the  data from the restaurant owner standpoint: Trip advisor provides a lot of insights to consumer on how to select places to travel and how to evaluate travel options. For this analysis we wanted to provide data to help restaurants make better decision pricing, location, menu options. With this insight, restaurant owner can pivot their marketing campaign and offerings. We wanted to accomplish this by answering the  research questions. 
 1. Understand the factors that impact restaurant ratings and price
@@ -32,7 +31,16 @@ The goal of the project is to evaluate the  data from the restaurant owner stand
 4. What impact does healthy options have on customer’s rating of restaurants
 5. Create a prediction model that classifies the restaurant ratings and prices range
 
+## Conclusion: 
 
-Missing information for restaurants (for example unrated or unreviewed restaurants) are in the dataset as NaN (numpy.nan)
+Restaurant owners must consider a variety of factors when launching  or managing a restaurant. 
+
+1. As it relates to pricing the factors that a restaurant should consider are the type of cuisine, specifically recommending to explore recipes relating to: American,Asian,Bar,Brew Pub, British, Central European, European, Fast Food, French,Gluten Free Options,Halal,Healthy,Korean and Mediterranean
+
+2. Europeans are trending towards healthier restaurant options, and there's an opportunity to build healthy conscious restaurants in Lisbon, Paris, Madrid, Oporto, Bratislava and Lyon
+
+3. Digging deeper into Topic Modeling using Latent Dirichlet Algorithm, we found that topics like “Hidden Gem”, “Little and cosy space” actually make a restaurant more likely to receive a thumbs up from customers whereas topics such as “Tourist trap” and “Rude staff” can impact the reputation of restaurant drastically
+
+4. After using predictive analytics to predict ratings,  we realized that analyzing the current system of collecting reviews hampers the analysis as different people have different ways to express and review the restaurants. Therefore, having an automated review predictor would make more valuable contributions in building a better predictive model as the reviews would capture the true sense of how people feel of that particular restaurant
+
 **Source:** https://www.kaggle.com/damienbeneschi/krakow-ta-restaurans-data-raw 
-
